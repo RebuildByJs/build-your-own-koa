@@ -7,6 +7,7 @@ const EventEmitter = require('events');
 
 const compose = require('./compose');
 const request = require('./request');
+const response = require('./response');
 
 module.exports = class Koa extends EventEmitter {
   constructor() {
@@ -16,7 +17,7 @@ module.exports = class Koa extends EventEmitter {
     this.middlewares = [];
     this.context = Object.create(null);
     this.request = Object.create(request);
-    this.response = Object.create(null);
+    this.response = Object.create(response);
   }
 
   use (func) {
@@ -56,7 +57,7 @@ module.exports = class Koa extends EventEmitter {
 
   handleRequest (ctx, middlewares) {
     
-    const handleResponse = () => { response(ctx); };
+    const handleResponse = () => { responsed(ctx); };
     
     return middlewares(ctx).then(handleResponse).catch((err) => { console.log(err); });
   }
@@ -65,7 +66,7 @@ module.exports = class Koa extends EventEmitter {
 
 const emptyCode = [404, 500, 304, 204];
 
-const response  = function (ctx) {
+const responsed  = function (ctx) {
   const res = ctx.res;
   const code = ctx.status;
   let body = ctx.body;

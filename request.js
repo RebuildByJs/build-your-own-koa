@@ -27,5 +27,8 @@ module.exports = {
   },
   get querystring() {
     return url.parse(this.url).search || '';
+  },
+  get query() {
+    return url.parse(this.url).query || '';
   }
 };
