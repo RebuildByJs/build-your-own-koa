@@ -1,7 +1,7 @@
 
 const compose = function (middlewares) {
   return (ctx, final) => {
-    const index = -1;
+    let index = -1;
     return next(0);
     
     function next (i) {

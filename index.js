@@ -2,9 +2,11 @@
  * Created by zhangxiang on 2018/04/15
  */
 const http = require('http');
+const stream = require('stream');
 const EventEmitter = require('events');
 
 const compose = require('./compose');
+const request = require('./request');
 
 module.exports = class Koa extends EventEmitter {
   constructor() {
@@ -12,9 +14,9 @@ module.exports = class Koa extends EventEmitter {
     
     this.proxy = false;
     this.middlewares = [];
-    this.context = Object.create();
-    this.request = Object.create();
-    this.response = Object.create();
+    this.context = Object.create(null);
+    this.request = Object.create(request);
+    this.response = Object.create(null);
   }
 
   use (func) {
@@ -46,8 +48,8 @@ module.exports = class Koa extends EventEmitter {
     const resposne = Object.create(this.response);
     context.request = response.request = request;
     context.response = request.response = response;
-    context.res = this.res = this.request.res = res;
-    context.req = this.req = this.response.req = req;
+    context.res = this.res = request.res = response.res = res;
+    context.req = this.req = request.req = response.req = req;
     context.app = this;
     return context;
   }
@@ -61,6 +63,42 @@ module.exports = class Koa extends EventEmitter {
 
 };
 
-const response  = function (ctx) {
+const emptyCode = [404, 500, 304, 204];
 
+const response  = function (ctx) {
+  const res = ctx.res;
+  const code = ctx.status;
+  let body = ctx.body;
+
+  if (emptyCode.includes(code)) {
+    body = null;
+    return res.end();
+  }
+
+  if (ctx.method === 'HEAD') {
+    if (!res.headerSent) {
+      ctx.length = Buffer.byteLength(body);
+    }
+    body = null;
+    return res.end();
+  }
+
+  if (body == null) {
+    body = message[code] || null;
+    if (!res.headerSent) {
+      ctx.type = 'text';
+      ctx.length = Buffer.byteLength(body);
+    }
+    return res.end(body);
+  }
+
+  if (Buffer.isBuffer(body)) return res.end(body);
+  if ('string' === typeof body) return res.end(body);
+  if (body instanceof stream) return body.pipe(res);
+
+  body = JSON.stringify(body);
+  if (!res.headerSent) {
+    ctx.length = Buffer.byteLength(body);
+  }
+  return res.end(body);
 };
