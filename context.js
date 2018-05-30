@@ -17,8 +17,8 @@ const delegaGet = (property, name) => {
 let requestSet = [];
 let requestGet = [];
 
-let responseSet = [];
-let responseGet = [];
+let responseSet = ['body', 'status'];
+let responseGet = ['body', 'status'];
 
 requestSet.forEach((name) => {
   deleteSet('request', name);

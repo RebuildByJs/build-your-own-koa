@@ -8,6 +8,7 @@ const EventEmitter = require('events');
 const compose = require('./compose');
 const request = require('./request');
 const response = require('./response');
+const context = require('./context');
 
 module.exports = class Koa extends EventEmitter {
   constructor() {
@@ -15,7 +16,7 @@ module.exports = class Koa extends EventEmitter {
     
     this.proxy = false;
     this.middlewares = [];
-    this.context = Object.create(null);
+    this.context = Object.create(context);
     this.request = Object.create(request);
     this.response = Object.create(response);
   }
